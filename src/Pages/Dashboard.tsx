@@ -36,7 +36,7 @@ if (error) return <Text>An error has occurred: {(error as Error).message}</Text>
               </Flex>
             </CardHeader>
 
-            <CardBody bg={'gray.200'}>
+            <CardBody >
               <VStack>
                 <Text textAlign={'center'}>Category: <Badge colorScheme="green">{product.category}</Badge></Text>
                 <Text>Name: {product.title}</Text>
@@ -44,7 +44,7 @@ if (error) return <Text>An error has occurred: {(error as Error).message}</Text>
               </VStack>
             </CardBody>
 
-            <Divider borderColor={'gray.200'} />
+            <Divider />
 
             <CardFooter textAlign={'center'}>
               <Text>Price: {product.price}</Text>

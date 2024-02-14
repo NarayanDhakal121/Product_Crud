@@ -5,4 +5,5 @@
     description: string;
     image: string;
     category: string;
+    created_at: string;
 }

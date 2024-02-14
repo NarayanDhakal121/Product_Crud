@@ -1,11 +1,12 @@
-import React from 'react';
-import { useMutation } from 'react-query';
-import { Table, Tr, Th, Thead, Tbody, Td, VStack, Image, Text, Flex, IconButton } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { useMutation, useQuery } from 'react-query';
+import { Table, Tr, Th, Thead, Tbody, Td, VStack, Image, Text, Flex, IconButton, Checkbox } from '@chakra-ui/react';
 import { DeleteIcon, EditIcon, ViewIcon } from '@chakra-ui/icons';
 import { Link } from 'react-router-dom';
-import useProducts from '../useProductQuery/useProduct'; 
-import Product from '../Component/Interface';
 import axios from 'axios';
+import ReactPaginate from 'react-paginate';
+
+const PAGE_SIZE = 12; 
 
 const deleteProduct = async (id: number) => {
   const response = await axios.delete(`https://fakestoreapi.com/products/${id}`);
@@ -16,8 +17,13 @@ const deleteProduct = async (id: number) => {
   }
 }
 
-const Viewp = () => {
-  const { data, isLoading, error } = useProducts(); 
+const ProductTable= () => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const { data, isLoading, error } = useQuery(['products', currentPage], () => {
+    return axios.get(`https://fakestoreapi.com/products?limit=${PAGE_SIZE}&offset=${currentPage * PAGE_SIZE}`)
+      .then((res) => res.data);
+  }); 
+
   const mutation = useMutation(deleteProduct, {
     onSuccess: () => {
       console.log('Product deleted successfully');
@@ -27,19 +33,24 @@ const Viewp = () => {
     },
   });
 
-  if (isLoading) return <Text>Loading...</Text>;
-  if (error) return <Text>An error has occurred: {(error as Error).message}</Text>;
-
   const handleDelete = (id: number) => {
     mutation.mutate(id);
   }
 
+  const handlePageChange = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected);
+  };
+
+  if (isLoading) return <Text>Loading...</Text>;
+  if (error) return <Text>An error has occurred: {(error as Error).message}</Text>;
+
   return (
     <VStack spacing={4} align="stretch">
+      <Checkbox>Select</Checkbox>
       <Table variant="simple" bg={'red.200'}>
         <Thead>
           <Tr>
-             <Th>s.n</Th>
+            <Th>s.n</Th>
             <Th>Title</Th>
             <Th>Image</Th>
             <Th>Description</Th>
@@ -49,7 +60,7 @@ const Viewp = () => {
           </Tr>
         </Thead>
         <Tbody bg={'gray.400'}>
-          {data?.map((product:Product , index: number) =>(
+          {data?.map((product: any, index: number) => (
             <Tr key={product.id}>
               <Td>{index + 1}</Td>
               <Td>{product.title}</Td>
@@ -72,8 +83,16 @@ const Viewp = () => {
           ))}
         </Tbody>
       </Table>
+      <ReactPaginate
+        pageCount={5} 
+        pageRangeDisplayed={5}
+        marginPagesDisplayed={2}
+        onPageChange={handlePageChange}
+        containerClassName={'pagination'}
+        activeClassName={'active'}
+      />
     </VStack>
   );
 }
 
-export default Viewp;
+export default ProductTable;
